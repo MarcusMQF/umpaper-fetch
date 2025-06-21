@@ -99,7 +99,7 @@ class ZipCreator:
                 'year': year,
                 'semester': semester,
                 'paper_type': paper_type,
-                'original_name': filename
+                'original_name': str(filename)
             }
         
         return organized
@@ -133,7 +133,7 @@ class ZipCreator:
         filename = file_info.get('original_name', file_path.name)
         path_parts.append(filename)
         
-        return '/'.join(path_parts)
+        return '/'.join(str(part) for part in path_parts)
     
     def _extract_year_from_filename(self, filename):
         """Extract year from filename."""

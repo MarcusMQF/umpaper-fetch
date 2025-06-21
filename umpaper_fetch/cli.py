@@ -267,7 +267,24 @@ def main():
             sys.exit(1)
         
         logger.info(f"✅ Found {len(papers)} papers")
-        print(f"✅ Found {len(papers)} papers")
+        
+        # Display found papers list
+        print(f"\n{'='*80}")
+        print(f"📄 FOUND {len(papers)} PAST YEAR PAPERS FOR {subject_code}")
+        print(f"{'='*80}")
+        for i, paper in enumerate(papers, 1):
+            print(f"{i:2d}. {paper.title}")
+            print(f"    📅 Year: {paper.year}, Semester: {paper.semester}")
+            print(f"    📝 Type: {paper.paper_type}")
+            print(f"    🔗 URL: {paper.download_url}")
+            print()
+        
+        # Ask user if they want to download all papers
+        download_confirm = input(f"Download all {len(papers)} papers? (y/N): ").strip().lower()
+        if download_confirm not in ['y', 'yes']:
+            print("❌ Download cancelled by user")
+            authenticator.cleanup()
+            sys.exit(0)
         
         # Step 3: Download papers
         logger.info("Step 3: Downloading papers...")
@@ -283,13 +300,49 @@ def main():
         # Step 4: Create ZIP archive
         logger.info("Step 4: Creating ZIP archive...")
         zip_creator = ZipCreator()
-        zip_path = zip_creator.create_zip(downloaded_files, subject_code, output_dir)
+        zip_filename = f"{subject_code}_Past_Year_Papers.zip"
+        zip_path_full = output_dir / zip_filename
+        zip_path = zip_creator.create_zip(downloaded_files, str(zip_path_full), subject_code)
         
         if zip_path:
             logger.info(f"✅ ZIP archive created: {zip_path}")
             print(f"\n🎉 Success! All papers downloaded and zipped:")
             print(f"📦 ZIP file: {zip_path}")
             print(f"📁 Individual files: {output_dir / subject_code}")
+            
+            # Ask if user wants to delete individual files
+            subject_dir = output_dir / subject_code
+            print(f"\n📁 Individual PDF files are still in: {subject_dir}")
+            delete_confirm = input("Delete individual files to save space? (y/N): ").strip().lower()
+            if delete_confirm in ['y', 'yes']:
+                try:
+                    # Delete individual PDF files
+                    deleted_count = 0
+                    for file_path in downloaded_files:
+                        try:
+                            file_path = Path(file_path)
+                            if file_path.exists():
+                                file_path.unlink()
+                                deleted_count += 1
+                                logger.debug(f"Deleted: {file_path}")
+                        except Exception as file_error:
+                            logger.warning(f"Could not delete {file_path}: {file_error}")
+                    
+                    # Try to remove the subject directory if it's empty
+                    try:
+                        if subject_dir.exists() and not any(subject_dir.iterdir()):
+                            subject_dir.rmdir()
+                            logger.debug(f"Removed empty directory: {subject_dir}")
+                    except Exception as dir_error:
+                        logger.debug(f"Could not remove directory {subject_dir}: {dir_error}")
+                    
+                    print(f"✅ Individual files deleted successfully ({deleted_count} files)")
+                    logger.info(f"Individual files deleted by user request ({deleted_count} files)")
+                except Exception as e:
+                    print(f"⚠️ Failed to delete individual files: {e}")
+                    logger.warning(f"Failed to delete individual files: {e}")
+            else:
+                print("📁 Individual files kept")
         else:
             logger.warning("⚠️ ZIP creation failed, but individual files are available")
             print(f"\n⚠️ Papers downloaded but ZIP creation failed")

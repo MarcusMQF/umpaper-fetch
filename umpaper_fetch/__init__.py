@@ -5,7 +5,7 @@ This package provides tools to automatically download past year exam papers
 from University Malaya's repository through an automated browser interface.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 __author__ = "Marcus Mah"
 __email__ = "marcusmah6969@gmail.com"
 __description__ = "Automated downloader for University Malaya past year exam papers"
