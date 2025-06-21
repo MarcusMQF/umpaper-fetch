@@ -29,7 +29,7 @@ except FileNotFoundError:
 
 setup(
     name="umpaper-fetch",
-    version="1.0.3",
+    version="1.0.4",
     author="Marcus Mah",  # Replace with your actual name
     author_email="marcusmah6969@gmail.com",
     description="Automated downloader for University Malaya past year exam papers",
