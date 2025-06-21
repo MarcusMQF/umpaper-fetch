@@ -50,4 +50,7 @@ Thumbs.db
 
 # Credentials (never commit these)
 credentials.txt
-config.ini 
+config.ini
+
+# Documentation (local development only)
+docs/ 
