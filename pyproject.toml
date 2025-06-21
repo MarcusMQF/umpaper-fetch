@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "umpaper-fetch"
+version = "1.0.0"
+description = "Automated downloader for University Malaya past year exam papers"
+authors = [
+    {name = "Marcus Mah", email = "marcusmah6969@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Topic :: Education",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+]
+keywords = ["university", "malaya", "um", "exam", "papers", "downloader", "automation", "selenium"]
+dependencies = [
+    "selenium>=4.15.2",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.2",
+    "webdriver-manager>=4.0.1",
+    "lxml>=4.9.3",
+    "urllib3>=2.0.7",
+    "certifi>=2023.7.22",
+    "tqdm>=4.66.1"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=22.0",
+    "flake8>=5.0",
+    "mypy>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MarcusMQF/umpaper-fetch"
+Documentation = "https://github.com/MarcusMQF/umpaper-fetch#readme"
+Repository = "https://github.com/MarcusMQF/umpaper-fetch"
+"Bug Reports" = "https://github.com/MarcusMQF/umpaper-fetch/issues"
+
+[project.scripts]
+um-papers = "umpaper_fetch.cli:main"
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "test_*", "debug_*", "example_*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"] 
