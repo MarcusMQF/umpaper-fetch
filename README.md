@@ -1,8 +1,42 @@
-# 🎓 UM Past Year Paper Downloader - PaperFetch
+# 🎓 Open Sourse UM PastYear Paper Downloader
 
 **One-click bulk download solution for University Malaya (UM) past year exam papers**
 
 Automate the tedious process of manually downloading past year papers one by one. Simply provide your UM credentials and subject code, and get all available papers in a single organized ZIP file.
+
+[![PyPI version](https://badge.fury.io/py/umpaper-fetch.svg)](https://badge.fury.io/py/umpaper-fetch)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## 🚀 Quick Start (For Regular Users)
+
+### **Installation**
+```bash
+# Install from PyPI
+pip install umpaper-fetch
+
+# Upgrade to latest version
+pip install --upgrade umpaper-fetch
+```
+
+### **Basic Usage**
+```bash
+# Run the downloader
+python -m umpaper_fetch.cli
+
+# Or with command-line shortcut (if available)
+um-papers
+```
+
+### **First Run**
+Follow the interactive prompts:
+1. Enter your UM username (without @siswa.um.edu.my)
+2. Enter your password securely
+3. Enter subject code (e.g., WIA1005)
+4. Choose download location
+5. Confirm download of found papers
 
 ---
 
@@ -31,19 +65,31 @@ Automate the tedious process of manually downloading past year papers one by one
 - **🔍 Browser Options**: Support for Edge, Chrome with auto-detection
 - **📝 Comprehensive Logging**: Detailed logs for troubleshooting
 
-### 🔒 **Security & Reliability**
-- **🛡️ Secure Password Input**: Hidden password entry (never stored/logged)
-- **🧹 Session Cleanup**: Automatic browser data cleanup after use
-- **✅ Download Verification**: Validates PDF integrity after download
-- **🔐 HTTPS Enforcement**: Secure connections to UM servers
-- **⏱️ Configurable Timeouts**: Customizable session and download timeouts
-
 ---
 
 ## 📋 Complete Command Reference
 
-### **Available Commands (9 total)**
+### **For Regular Users**
 
+#### **Interactive Mode (Recommended for beginners)**
+```bash
+python -m umpaper_fetch.cli
+```
+*Prompts for all required information*
+
+#### **Quick Commands**
+```bash
+# With username and subject code
+python -m umpaper_fetch.cli --username john_doe --subject-code WIA1005
+
+# With custom output directory
+python -m umpaper_fetch.cli -u student123 -s WXES1116 -o "C:/Downloads/Papers"
+
+# Skip location prompt for automation
+python -m umpaper_fetch.cli -s WIA1005 --no-location-prompt
+```
+
+#### **Available Options**
 | Command | Short | Description | Default |
 |---------|-------|-------------|---------|
 | `--username` | `-u` | UM username (without @siswa.um.edu.my) | *prompted* |
@@ -52,81 +98,85 @@ Automate the tedious process of manually downloading past year papers one by one
 | `--browser` | `-b` | Browser choice: `auto`, `chrome`, `edge` | `edge` |
 | `--timeout` | | Session timeout in seconds | `30` |
 | `--max-retries` | | Maximum retry attempts for failed downloads | `3` |
-| `--show-browser` | | Show browser window (disable headless mode) | `false` |
 | `--no-location-prompt` | | Skip interactive location selection | `false` |
 | `--verbose` | `-v` | Enable detailed debug logging | `false` |
 
-### **Usage Examples**
+### **For Developers & Advanced Users**
 
-**1. Interactive Mode (Recommended for first-time users)**
+#### **Development Installation**
 ```bash
-python main.py
-```
-*Prompts for username, password, subject code, and download location*
+# Clone repository
+git clone https://github.com/MarcusMQF/umpaper-fetch.git
+cd umpaper-fetch
 
-**2. Quick Command-Line Mode**
-```bash
-python main.py --username john_doe --subject-code WIA1005
-```
-*Only prompts for password*
+# Install in development mode
+pip install -e .
 
-**3. Fully Automated Mode**
-```bash
-python main.py -u student123 -s WXES1116 -o "C:/Downloads/Papers" --no-location-prompt
+# Install development dependencies
+pip install -e .[dev]
 ```
-*No prompts except secure password entry*
 
-**4. Debug Mode with Visible Browser**
+#### **Debug Commands**
 ```bash
-python main.py --subject-code WIA1005 --show-browser --verbose
-```
-*Shows browser actions and detailed logging*
+# Show browser window for debugging
+python -m umpaper_fetch.cli --show-browser --verbose --subject-code WIA1005
 
-**5. High-Performance Mode**
-```bash
-python main.py -s WIA1005 --max-retries 5 --timeout 60
-```
-*Extended timeouts and retries for slow connections*
+# High-performance mode with extended timeouts
+python -m umpaper_fetch.cli -s WIA1005 --max-retries 5 --timeout 60
 
-**6. Custom Browser Selection**
-```bash
-python main.py --browser chrome --subject-code CSC1025
+# Force specific browser
+python -m umpaper_fetch.cli --browser chrome --subject-code CSC1025
 ```
-*Force use of Chrome browser*
+
+#### **Developer Options**
+| Command | Description | Use Case |
+|---------|-------------|----------|
+| `--show-browser` | Show browser window (disable headless mode) | Debugging authentication |
+| `--verbose` | Enable detailed debug logging | Troubleshooting issues |
+| `--timeout 60` | Extended session timeout | Slow connections |
+| `--max-retries 5` | More retry attempts | Unstable connections |
 
 ---
 
-## 🚀 Quick Start Guide
+## 💡 Tips for Best Experience
 
-### **Prerequisites**
-- Python 3.8+ installed
-- One of these browsers: **Microsoft Edge** (recommended), Google Chrome
-- UM student account with active credentials
-- Stable internet connection
-
-### **Installation**
+### **Choose the Right Browser**
 ```bash
-# 1. Clone/download this repository
-git clone <repository-url>
-cd um-past-year-downloader
+# Windows users (recommended)
+python -m umpaper_fetch.cli --browser edge --subject-code WIA1005
 
-# 2. Install dependencies
-pip install -r requirements.txt
+# Mac/Linux users
+python -m umpaper_fetch.cli --browser chrome --subject-code WIA1005
 
-# 3. Ready to use!
-python main.py
+# Auto-detect (fallback)
+python -m umpaper_fetch.cli --browser auto --subject-code WIA1005
 ```
 
-### **First Run**
+### **Optimize for Your Connection**
 ```bash
-python main.py
+# For slow/unstable connections
+python -m umpaper_fetch.cli --timeout 90 --max-retries 5 --subject-code WIA1005
+
+# For fast connections
+python -m umpaper_fetch.cli --timeout 15 --max-retries 2 --subject-code WIA1005
 ```
-Follow the interactive prompts:
-1. Enter your UM username (without @siswa.um.edu.my)
-2. Enter your password securely
-3. Enter subject code (e.g., WIA1005)
-4. Choose download location
-5. Confirm download of found papers
+
+### **Batch Processing Multiple Subjects**
+```bash
+# Process multiple subjects
+python -m umpaper_fetch.cli -s WIA1005 --no-location-prompt -o "./Papers/WIA1005"
+python -m umpaper_fetch.cli -s WIX1116 --no-location-prompt -o "./Papers/WXES1116"
+python -m umpaper_fetch.cli -s CSC1025 --no-location-prompt -o "./Papers/CSC1025"
+```
+
+### **Automation-Friendly Commands**
+```bash
+# Fully automated (only prompts for password)
+python -m umpaper_fetch.cli -u your_username -s WIA1005 --no-location-prompt -o "./Papers"
+
+# Silent mode with custom browser
+python -m umpaper_fetch.cli -u your-username -s WXES1116 --browser edge --no-location-prompt
+```
 
 ---
 
@@ -154,260 +204,111 @@ Follow the interactive prompts:
 - **Optimized Compression**: Balanced compression for size/speed
 - **Preserve Metadata**: Original filenames and dates maintained
 
-### **Generated Reports**
-- **Download Summary**: Shows total papers found and downloaded
-- **Failed Downloads**: Lists any papers that couldn't be downloaded
-- **File Inventory**: Complete list of papers with years and types
-- **Timestamp**: When the download was performed
-
 ---
 
-## 🔧 Advanced Configuration
+## 🔧 Prerequisites & Setup
 
-### **Browser Selection Guide**
+### **System Requirements**
+- **Python 3.8+** installed
+- **Internet connection** (stable recommended)
+- **UM student account** with active credentials
+- **Browser**: Microsoft Edge (Windows) or Google Chrome (Mac/Linux)
 
-| Browser | Best For | Advantages | Notes |
-|---------|----------|------------|-------|
-| **Edge** | Windows users | Built-in, no driver conflicts, memory efficient | **Recommended** |
-| **Chrome** | Mac/Linux users | Wide compatibility, stable | May need driver updates |
-| **Auto** | Uncertain | Detects best available | Falls back to Edge → Chrome |
+### **Browser Setup**
+- **Windows**: Microsoft Edge (pre-installed, recommended)
+- **Mac/Linux**: Google Chrome (install from google.com/chrome)
+- **Auto-detection**: Tool will find the best available browser
 
-### **Performance Tuning**
-```bash
-# For slow connections
-python main.py --timeout 60 --max-retries 5
-
-# For fast connections  
-python main.py --timeout 15 --max-retries 2
-
-# For debug/troubleshooting
-python main.py --verbose --show-browser
-```
-
-### **Output Directory Options**
-- **Default**: `./downloads` (project folder)
-- **Custom**: Any valid path (e.g., `C:/Users/Student/Papers`)
-- **Interactive**: Choose during runtime
-- **Auto**: Use `--no-location-prompt` to skip selection
-
----
-
-## 🧪 Testing & Validation
-
-### **Built-in Test Scripts**
-
-**1. Complete System Test**
-```bash
-python test_setup.py
-```
-*Tests Python environment, dependencies, browser drivers, and network connectivity*
-
-**2. Authentication Test**
-```bash
-python test_login.py
-```
-*Tests only the UM login process (useful for credential verification)*
-
-**3. Search Functionality Test**
-```bash
-python test_search_debug.py
-```
-*Tests paper search without downloading*
-
-### **Validation Features**
-- **PDF Integrity Check**: Verifies downloaded files are valid PDFs
-- **Size Validation**: Ensures files aren't empty or corrupted
-- **Download Verification**: Confirms all expected papers were downloaded
-- **ZIP Integrity**: Validates ZIP file creation and contents
-
----
-
-## 🛠️ Technical Architecture
-
-### **Modular Components**
-
-**1. Authentication (`auth/um_authenticator.py`)**
-- Handles complex UM OpenAthens SAML authentication
-- Manages session cookies and security tokens
-- Supports multiple browser backends
-
-**2. Paper Discovery (`scraper/paper_scraper.py`)**
-- Searches UM repository by subject code
-- Extracts paper metadata (year, semester, type)
-- Handles pagination and result filtering
-
-**3. Download Engine (`downloader/pdf_downloader.py`)**
-- Concurrent multi-threaded downloads
-- Progress tracking with visual indicators
-- Retry logic with exponential backoff
-- File integrity validation
-
-**4. Archive Creator (`utils/zip_creator.py`)**
-- Intelligent file organization by year/semester
-- Optimized compression algorithms
-- Auto-generated documentation
-- Metadata preservation
-
-**5. Logging System (`utils/logger.py`)**
-- Structured logging with multiple levels
-- Separate log files for debugging
-- Performance metrics and timing
-
-### **Dependencies**
-- `selenium` - Web automation and browser control
-- `requests` - HTTP session management  
-- `beautifulsoup4` - HTML parsing and data extraction
-- `tqdm` - Progress bars and status indicators
-- `webdriver-manager` - Automatic browser driver management
-
----
-
-## 🚨 Troubleshooting
-
-### **Common Issues & Solutions**
-
-**❌ Login Failed**
-- ✅ Verify username/password are correct
-- ✅ Check if your UM account is active  
-- ✅ Try using Edge browser: `--browser edge`
-- ✅ Enable debug mode: `--verbose --show-browser`
-
-**❌ No Papers Found**  
-- ✅ Verify subject code is correct (e.g., WIA1005, not wia1005)
-- ✅ Check if papers exist for that subject
-- ✅ Try different semester/year variations
-
-**❌ Download Errors**
-- ✅ Check internet connection stability
-- ✅ Increase timeout: `--timeout 60`
-- ✅ Increase retries: `--max-retries 5`  
-- ✅ Check disk space in output directory
-
-**❌ Browser/WebDriver Issues**
-- ✅ **Windows users**: Use Edge first: `--browser edge`
-- ✅ Update browser to latest version
-- ✅ Try: `pip install --upgrade webdriver-manager`
-- ✅ See `TROUBLESHOOTING.md` for detailed solutions
-
-### **Exit Codes**
-- `0` - Success
-- `1` - Authentication failure  
-- `2` - Network connectivity issues
-- `3` - No papers found or download failed
-- `4` - File system permissions error
-- `130` - User cancelled (Ctrl+C)
-
----
-
-## 📈 Performance Metrics
-
-### **Typical Performance**
-- **Authentication**: 5-10 seconds
-- **Paper Search**: 2-5 seconds  
-- **Download Speed**: 2-5 MB/s per file (concurrent)
-- **ZIP Creation**: 1-3 seconds
-- **Total Time**: 30 seconds - 2 minutes (depending on paper count)
-
-### **Optimization Features**
-- **Concurrent Downloads**: Up to 4 simultaneous downloads
-- **Intelligent Caching**: Avoids re-downloading existing files
-- **Compressed Archives**: ZIP compression reduces file size by 10-30%
-- **Progress Tracking**: Real-time ETA and speed indicators
-
----
-
-## ⚖️ Legal & Academic Use
-
-### **Terms of Use**
-- ✅ **Educational Purpose Only**: For UM students' academic use
-- ✅ **Respect UM Policies**: Adheres to university terms of service
-- ✅ **No Circumvention**: Uses standard authentication methods
-- ✅ **Rate Limiting**: Respects server load limits
-- ✅ **Valid Credentials Required**: Must have active UM account
-
-### **What This Tool Does NOT Do**
-- ❌ Bypass any security measures
-- ❌ Access restricted content
-- ❌ Store or share credentials
-- ❌ Violate copyright or academic policies
-- ❌ Access content you don't have permission for
-
----
-
-## 💡 Tips for Best Experience
-
-### **For Windows Users**
-```bash
-# Recommended command for Windows
-python main.py --browser edge --subject-code WIA1005
-```
-
-### **For Mac/Linux Users**  
-```bash
-# Recommended command for Mac/Linux
-python main.py --browser chrome --subject-code WIA1005
-```
-
-### **For Slow Connections**
-```bash
-python main.py --timeout 90 --max-retries 5 --subject-code WIA1005
-```
-
-### **For Batch Processing**
-```bash
-# Create a batch script for multiple subjects
-python main.py -s WIA1005 --no-location-prompt -o "./Papers/WIA1005"
-python main.py -s WXES1116 --no-location-prompt -o "./Papers/WXES1116"
-```
-
----
-
-## 🤝 Support & Contributing
-
-### **Getting Help**
-1. **📖 Read `TROUBLESHOOTING.md`** - Comprehensive solution guide
-2. **🔍 Check logs** - Review log files for detailed error information  
-3. **🧪 Run tests** - Use `python test_setup.py` to validate environment
-4. **🔄 Try Edge browser** - Often resolves driver issues: `--browser edge`
-
-### **Contributing**
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch  
-3. Make your changes with tests
-4. Submit a pull request
-5. Follow existing code style and documentation standards
-
----
-
-## 📄 Disclaimer
-
-**Disclaimer**: This tool is an unofficial utility created to help UM students access past year papers more efficiently. It is not affiliated with or endorsed by University Malaya. Users are responsible for complying with UM's terms of service and academic policies.
+### **Firewall/Network**
+- Tool connects to `exampaper.um.edu.my` via HTTPS
+- No special firewall configuration needed
+- Works on UM campus network and external networks
 
 ---
 
 ## 🎯 Quick Command Cheat Sheet
 
+### **For Regular Users**
 ```bash
-# Basic usage
-python main.py
+# Install and run
+pip install umpaper-fetch
+python -m umpaper_fetch.cli
 
-# Fast automated mode  
-python main.py -u username -s WIA1005 --no-location-prompt
+# Quick download with subject code
+python -m umpaper_fetch.cli -s WIA1005
+
+# Custom download location
+python -m umpaper_fetch.cli -s WIA1005 -o "C:/MyPapers"
+
+# Batch mode (no prompts except password)
+python -m umpaper_fetch.cli -u your_username -s WIA1005 --no-location-prompt
+```
+
+### **For Developers**
+```bash
+# Development setup
+git clone https://github.com/MarcusMQF/umpaper-fetch.git
+cd umpaper-fetch
+pip install -e .[dev]
 
 # Debug mode
-python main.py --verbose --show-browser -s WIA1005
+python -m umpaper_fetch.cli --show-browser --verbose -s WIA1005
 
-# High performance
-python main.py --max-retries 5 --timeout 60 -s WXES1116
-
-# Custom location
-python main.py -o "C:/Papers" -s CSC1025
-
-# Windows optimized
-python main.py --browser edge -s WIA1005
+# Performance testing
+python -m umpaper_fetch.cli --max-retries 5 --timeout 60 -s WXES1116
 ```
 
 ---
 
-*Time to lock in for your final*
+## 🔒 Security & Privacy
+
+### **What We Do**
+- ✅ Use secure HTTPS connections only
+- ✅ Handle UM authentication through official channels
+- ✅ Clean up browser data after each session
+- ✅ Never store or log passwords
+- ✅ Respect server rate limits
+
+### **What We Don't Do**
+- ❌ Store credentials anywhere
+- ❌ Bypass security measures
+- ❌ Access unauthorized content
+- ❌ Share or transmit personal data
+- ❌ Violate UM terms of service
+
+---
+
+## ⚖️ Legal & Academic Use
+
+**Educational Purpose Only**: This tool is designed for UM students to efficiently access past year papers for their studies. Users must:
+- Have valid UM credentials
+- Comply with UM's terms of service
+- Use papers for academic purposes only
+- Respect copyright and intellectual property rights
+
+**Disclaimer**: This is an unofficial tool not affiliated with University Malaya.
+
+---
+
+## 🤝 Support & Contributing
+
+### **Get Help**
+- 📖 Check this README for common usage patterns
+- 🐛 Report issues on [GitHub Issues](https://github.com/MarcusMQF/umpaper-fetch/issues)
+- 💡 Request features via GitHub Issues
+
+### **Contributing**
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes with tests
+4. Submit a pull request
+5. Follow existing code style
+
+### **Development Setup**
+```bash
+git clone https://github.com/MarcusMQF/umpaper-fetch.git
+cd umpaper-fetch
+pip install -e .[dev]
+pytest  # Run tests
+```
