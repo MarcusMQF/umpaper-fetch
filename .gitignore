@@ -53,4 +53,17 @@ credentials.txt
 config.ini
 
 # Documentation (local development only)
-docs/ 
+docs/
+
+# Development/Debug files
+test_*.py
+debug_*.py
+example_*.py
+main.py
+search_response.html
+
+# Root-level duplicate modules (use umpaper_fetch/ instead)
+auth/
+downloader/
+scraper/
+utils/ 
