@@ -1,4 +1,4 @@
-# 🎓 Open Sourse UM PastYear Paper Downloader
+# 🎓 Open Source UM PastYear Paper Downloader
 
 **One-click bulk download solution for University Malaya (UM) past year exam papers**
 

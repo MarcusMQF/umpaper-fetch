@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umpaper-fetch"
-version = "1.0.4"
+version = "1.0.5"
 description = "Automated downloader for University Malaya past year exam papers"
 authors = [
     {name = "Marcus Mah", email = "marcusmah6969@gmail.com"}
