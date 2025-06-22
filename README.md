@@ -26,7 +26,7 @@ pip install --upgrade umpaper-fetch
 # Run the downloader
 python -m umpaper_fetch.cli
 
-# Or with command-line shortcut (if available)
+# Or with command-line shortcut (if install inside venv and activated)
 um-papers
 ```
 
