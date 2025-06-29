@@ -22,14 +22,28 @@ from .utils.logger import setup_logger
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Download all past year papers for a UM subject code",
+        prog="python -m umpaper_fetch.cli",
+        description="⬇️  UM PastYear Paper Downloader (CLI Tools)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+        usage=argparse.SUPPRESS,
         epilog="""
-Examples:
-  um-papers
-  um-papers --username 24012345 --subject-code WIA1005
-  um-papers --username 24056789 --subject-code WXES1116 --show-browser
-  um-papers --no-location-prompt --output-dir "C:/Downloads"
+How to run:
+  python -m umpaper_fetch.cli                               # Interactive mode 
+  um-papers                                                 # Alternative if install in virtual environment
+
+Basic Examples:
+  python -m umpaper_fetch.cli -s WIA1005                    # Download WIA1005 papers (will prompt for username/password)
+  python -m umpaper_fetch.cli -u your_username -s WIA1006   # Pre-specify username
+  python -m umpaper_fetch.cli -s CSC1025 --no-location-prompt  # Use default Downloads folder
+
+Batch Processing:
+  python -m umpaper_fetch.cli -s WIA1005 --no-location-prompt -o "./Papers/WIA1005"
+  python -m umpaper_fetch.cli -s WIA1006 --no-location-prompt -o "./Papers/WIA1006"
+
+Advanced Options:
+  python -m umpaper_fetch.cli -s WIA1005 --show-browser     # Show browser for debugging
+  python -m umpaper_fetch.cli -s WIA1005 --verbose          # Enable detailed logging
+  python -m umpaper_fetch.cli -s WIA1005 --browser chrome   # Use specific browser
         """
     )
     
@@ -41,32 +55,32 @@ Examples:
     
     parser.add_argument(
         '--subject-code', '-s',
-        help='Subject code to search for (e.g., WIA1005)',
+        help='Subject code to search for (e.g., WIA1005, WIA1006, CSC1025)',
         type=str
     )
     
     parser.add_argument(
         '--output-dir', '-o',
-        help='Output directory for downloads (default: ./downloads)',
-        default='./Downloads',
+        help='Output directory for downloads (default: ~/Downloads)',
+        default=str(Path.home() / 'Downloads'),
         type=str
     )
     
     parser.add_argument(
         '--no-location-prompt',
-        help='Skip location selection prompt and use default output directory',
+        help='Skip location prompt, use default output directory',
         action='store_true'
     )
     
     parser.add_argument(
         '--show-browser',
-        help='Show browser window (default is headless mode)',
+        help='Show browser window for debugging (default: headless)',
         action='store_true'
     )
     
     parser.add_argument(
         '--browser', '-b',
-        help='Browser to use (auto, chrome, edge). Default: edge',
+        help='Browser to use: auto, chrome, edge (default: edge)',
         choices=['auto', 'chrome', 'edge'],
         default='edge',
         type=str
@@ -88,14 +102,14 @@ Examples:
     
     parser.add_argument(
         '--verbose', '-v',
-        help='Enable verbose logging',
+        help='Enable detailed debug logging',
         action='store_true'
     )
     
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s 1.0.5'
+        version='%(prog)s 1.0.6'
     )
     
     return parser.parse_args()
@@ -145,7 +159,7 @@ def get_download_location(default_output_dir):
     print("="*50)
     print(f"Default location: {default_output_dir.absolute()}")
     print("\nOptions:")
-    print("1. Use default location (downloads folder)")
+    print("1. Use default location (user Downloads folder)")
     print("2. Choose custom location")
     
     while True:
@@ -308,11 +322,10 @@ def main():
             logger.info(f"✅ ZIP archive created: {zip_path}")
             print(f"\n🎉 Success! All papers downloaded and zipped:")
             print(f"📦 ZIP file: {zip_path}")
-            print(f"📁 Individual files: {output_dir / subject_code}")
+            print(f"📁 Individual files: {output_dir}")
             
             # Ask if user wants to delete individual files
-            subject_dir = output_dir / subject_code
-            print(f"\n📁 Individual PDF files are still in: {subject_dir}")
+            print(f"\n📁 Individual PDF files are still in: {output_dir}")
             delete_confirm = input("Delete individual files to save space? (y/N): ").strip().lower()
             if delete_confirm in ['y', 'yes']:
                 try:
@@ -328,13 +341,7 @@ def main():
                         except Exception as file_error:
                             logger.warning(f"Could not delete {file_path}: {file_error}")
                     
-                    # Try to remove the subject directory if it's empty
-                    try:
-                        if subject_dir.exists() and not any(subject_dir.iterdir()):
-                            subject_dir.rmdir()
-                            logger.debug(f"Removed empty directory: {subject_dir}")
-                    except Exception as dir_error:
-                        logger.debug(f"Could not remove directory {subject_dir}: {dir_error}")
+                    # Note: Individual files are stored directly in output_dir, not in subdirectory
                     
                     print(f"✅ Individual files deleted successfully ({deleted_count} files)")
                     logger.info(f"Individual files deleted by user request ({deleted_count} files)")
@@ -346,7 +353,7 @@ def main():
         else:
             logger.warning("⚠️ ZIP creation failed, but individual files are available")
             print(f"\n⚠️ Papers downloaded but ZIP creation failed")
-            print(f"📁 Individual files: {output_dir / subject_code}")
+            print(f"📁 Individual files: {output_dir}")
         
         # Cleanup
         authenticator.cleanup()

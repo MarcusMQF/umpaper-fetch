@@ -23,10 +23,14 @@ pip install --upgrade umpaper-fetch
 
 ### **Basic Usage**
 ```bash
-# Run the downloader
+# See all available commands and options
+python -m umpaper_fetch.cli --help
+
+# Run the downloader interactively
 python -m umpaper_fetch.cli
 
 # Or with command-line shortcut (if install inside venv and activated)
+um-papers --help
 um-papers
 ```
 
@@ -73,6 +77,10 @@ Follow the interactive prompts:
 
 #### **Interactive Mode (Recommended for beginners)**
 ```bash
+# See all available options first
+python -m umpaper_fetch.cli --help
+
+# Run interactive mode
 python -m umpaper_fetch.cli
 ```
 *Prompts for all required information*
@@ -92,6 +100,7 @@ python -m umpaper_fetch.cli -s WIA1005 --no-location-prompt
 #### **Available Options**
 | Command | Short | Description | Default |
 |---------|-------|-------------|---------|
+| `--help` | `-h` | Available command to use |  |
 | `--username` | `-u` | UM username (without @siswa.um.edu.my) | *prompted* |
 | `--subject-code` | `-s` | Subject code to search for (e.g., WIA1005) | *prompted* |
 | `--output-dir` | `-o` | Custom download directory | `./downloads` |
@@ -233,6 +242,9 @@ python -m umpaper_fetch.cli -u your-username -s WXES1116 --browser edge --no-loc
 # Install and run
 pip install umpaper-fetch
 python -m umpaper_fetch.cli
+
+# Get help and see all options
+python -m umpaper_fetch.cli --help
 
 # Quick download with subject code
 python -m umpaper_fetch.cli -s WIA1005
