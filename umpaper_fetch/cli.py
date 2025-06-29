@@ -48,7 +48,7 @@ Examples:
     parser.add_argument(
         '--output-dir', '-o',
         help='Output directory for downloads (default: ./downloads)',
-        default='./downloads',
+        default='./Downloads',
         type=str
     )
     
