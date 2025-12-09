@@ -2,7 +2,7 @@
 
 **One-click bulk download solution for University Malaya (UM) past year exam papers**
 
-Automate the tedious process of manually downloading past year papers one by one. Simply provide your UM credentials and subject code, and get all available papers in a single organized ZIP file.
+Automate the tedious process of manually downloading past year papers one by one. Simply provide your UM credentials and subject code, and get all available papers in a organized ZIP file.
 
 [![PyPI version](https://badge.fury.io/py/umpaper-fetch.svg)](https://badge.fury.io/py/umpaper-fetch)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -26,7 +26,7 @@ python -m venv venv
 python3 -m venv venv
 source venv/bin/activate
 ```
-> If not using virtual environment, change all commands from "umpaper" to "python -m umpaper_fetch.cli".
+> If not using virtual environment, change all commands from "umpaper" to "python -m umpaper_fetch.cli"
 
 Then install the package:
 ```bash
