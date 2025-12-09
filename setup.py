@@ -29,7 +29,7 @@ except FileNotFoundError:
 
 setup(
     name="umpaper-fetch",
-    version="1.0.6",
+    version="1.0.7",
     author="Marcus Mah",  # Replace with your actual name
     author_email="marcusmah6969@gmail.com",
     description="Automated downloader for University Malaya past year exam papers",
@@ -62,7 +62,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "um-papers=umpaper_fetch.cli:main",
+            "umpaper=umpaper_fetch.cli:main",
         ],
     },
     keywords="university malaya um exam papers downloader automation selenium",

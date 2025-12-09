@@ -56,7 +56,7 @@ Repository = "https://github.com/MarcusMQF/umpaper-fetch"
 "Bug Reports" = "https://github.com/MarcusMQF/umpaper-fetch/issues"
 
 [project.scripts]
-um-papers = "umpaper_fetch.cli:main"
+umpaper = "umpaper_fetch.cli:main"
 
 [tool.setuptools.packages.find]
 exclude = ["tests*", "test_*", "debug_*", "example_*"]

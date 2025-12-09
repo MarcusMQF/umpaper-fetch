@@ -138,8 +138,13 @@ class UMAuthenticator:
     
     def _add_common_options(self, options):
         """Add common options for Chrome and Edge."""
+        # Suppress logging and experimental features to reduce noise
+        options.add_argument('--log-level=3')  # Fatal only
+        options.add_argument('--silent')
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+
         if self.headless:
-            options.add_argument('--headless')
+            options.add_argument('--headless=new')
         
         # Security and performance options
         options.add_argument('--no-sandbox')
@@ -206,11 +211,25 @@ class UMAuthenticator:
             
             # Step 2: Select "UM Staff and Students" option
             self.logger.info("Selecting UM Staff and Students option...")
+                       
+            # Check for and close cookie overlay if present
+            try:
+                self.driver.execute_script("""
+                    var overlay = document.getElementById('ccc-overlay');
+                    if (overlay) { overlay.parentNode.removeChild(overlay); }
+                    var notify = document.getElementById('ccc-notify');
+                    if (notify) { notify.parentNode.removeChild(notify); }
+                """)
+            except Exception:
+                pass
+
             um_option = self._wait_for_clickable(
                 By.XPATH, 
                 "//div[contains(text(), 'UM Staff and Students')]"
             )
-            um_option.click()
+
+            # Use JS click to bypass any remaining overlays
+            self.driver.execute_script("arguments[0].click();", um_option)
             
             # Step 3: Fill in credentials
             self.logger.info("Entering credentials...")
@@ -261,7 +280,7 @@ class UMAuthenticator:
                         
                         if has_student and has_staff:
                             status_dropdown = select_elem
-                            self.logger.info(f"✅ Found status dropdown in select {i}")
+                            self.logger.info(f"Found status dropdown in select {i}")
                             break
                     except Exception as e:
                         self.logger.warning(f"Error checking select {i}: {e}")
@@ -274,12 +293,12 @@ class UMAuthenticator:
                 self.logger.info("Trying backup methods for status dropdown...")
                 try:
                     status_dropdown = self._wait_for_element(By.NAME, "status", timeout=10)
-                    self.logger.info("✅ Found status dropdown by name")
+                    self.logger.info("Found status dropdown by name")
                 except Exception as e1:
                     self.logger.warning(f"Could not find status dropdown by name: {e1}")
                     try:
                         status_dropdown = self._wait_for_element(By.ID, "status", timeout=5)
-                        self.logger.info("✅ Found status dropdown by ID")
+                        self.logger.info("Found status dropdown by ID")
                     except Exception as e2:
                         self.logger.warning(f"Could not find status dropdown by ID: {e2}")
             
@@ -302,7 +321,7 @@ class UMAuthenticator:
             # Method 1: Try by visible text (most reliable)
             try:
                 select.select_by_visible_text("Student")
-                self.logger.info("✅ Selected Student by visible text")
+                self.logger.info("Selected Student by visible text")
                 selection_successful = True
             except Exception as e1:
                 self.logger.warning(f"Could not select by visible text 'Student': {e1}")
@@ -310,7 +329,7 @@ class UMAuthenticator:
                 # Method 2: Try by value
                 try:
                     select.select_by_value("Student")
-                    self.logger.info("✅ Selected Student by value")
+                    self.logger.info("Selected Student by value")
                     selection_successful = True
                 except Exception as e2:
                     self.logger.warning(f"Could not select by value 'Student': {e2}")
@@ -320,7 +339,7 @@ class UMAuthenticator:
                         if option.text.strip() and "student" in option.text.lower():
                             try:
                                 select.select_by_visible_text(option.text)
-                                self.logger.info(f"✅ Selected Student by text variation: '{option.text}'")
+                                self.logger.info(f"Selected Student by text variation: '{option.text}'")
                                 selection_successful = True
                                 break
                             except Exception as e3:
@@ -333,7 +352,7 @@ class UMAuthenticator:
                             for i, option in enumerate(options):
                                 if option.text.strip() and "student" in option.text.lower():
                                     select.select_by_index(i)
-                                    self.logger.info(f"✅ Selected Student by index {i}")
+                                    self.logger.info(f"Selected Student by index {i}")
                                     selection_successful = True
                                     break
                         except Exception as e4:
@@ -385,7 +404,7 @@ class UMAuthenticator:
                 try:
                     self.logger.info(f"Trying method {i+1}: {description}")
                     sign_in_button = self._wait_for_clickable(by, selector, timeout=8)
-                    self.logger.info(f"✅ Found sign-in button using: {description}")
+                    self.logger.info(f"Found sign-in button using: {description}")
                     break
                 except Exception as e:
                     self.logger.warning(f"Method {i+1} ({description}) failed: {e}")

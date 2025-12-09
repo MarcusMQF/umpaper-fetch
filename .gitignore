@@ -56,7 +56,8 @@ config.ini
 docs/
 
 # Development/Debug files
-test_*.py
+tests/
+scripts/
 debug_*.py
 example_*.py
 main.py

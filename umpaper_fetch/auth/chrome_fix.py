@@ -32,6 +32,15 @@ def get_chrome_driver_path():
             # Try to get the latest driver for Windows 64-bit
             driver_manager = ChromeDriverManager()
             driver_path = driver_manager.install()
+
+            # Fix for webdriver-manager picking wrong file (e.g. THIRD_PARTY_NOTICES)
+            if not driver_path.lower().endswith(".exe"):
+                logger.warning(f"webdriver-manager returned non-exe path: {driver_path}")
+                base_dir = os.path.dirname(driver_path)
+                potential_exe = os.path.join(base_dir, "chromedriver.exe")
+                if os.path.exists(potential_exe):
+                    driver_path = potential_exe
+                    logger.info(f"Fixed driver path to: {driver_path}")
             
             # Verify the driver is executable
             if os.path.exists(driver_path) and os.access(driver_path, os.X_OK):

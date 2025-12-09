@@ -18,7 +18,6 @@ from .downloader.pdf_downloader import PDFDownloader
 from .utils.zip_creator import ZipCreator
 from .utils.logger import setup_logger
 
-
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -55,7 +54,8 @@ Advanced Options:
     
     parser.add_argument(
         '--subject-code', '-s',
-        help='Subject code to search for (e.g., WIA1005, WIA1006, CSC1025)',
+        help='Subject code(s) to search for (e.g., WIA1005 WIA1006)',
+        nargs='+',
         type=str
     )
     
@@ -80,9 +80,9 @@ Advanced Options:
     
     parser.add_argument(
         '--browser', '-b',
-        help='Browser to use: auto, chrome, edge (default: edge)',
+        help='Browser to use: auto, chrome, edge (default: chrome)',
         choices=['auto', 'chrome', 'edge'],
-        default='edge',
+        default='chrome',
         type=str
     )
     
@@ -109,7 +109,7 @@ Advanced Options:
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s 1.0.6'
+        version='%(prog)s 1.0.7'
     )
     
     return parser.parse_args()
@@ -212,38 +212,50 @@ def main():
     logger = setup_logger(log_level)
     
     try:
-        # Create default output directory
+        # Create default output directory object but don't create folder yet
         default_output_dir = Path(args.output_dir)
-        default_output_dir.mkdir(parents=True, exist_ok=True)
+        # default_output_dir.mkdir(parents=True, exist_ok=True)  <-- Removed to prevent empty folder creation
         
         logger.info("=== UM Past Year Paper Downloader ===")
         
         # Get credentials
         username, password = get_credentials(args.username)
         
-        # Get subject code
-        subject_code = get_subject_code(args.subject_code)
-        
-        # Get download location
+        # Get subject codes
+        # args.subject_code is now a list of strings due to nargs='+'
+        # We also support comma separation within strings
+        raw_subjects = args.subject_code if args.subject_code else []
+        if not raw_subjects:
+             # If no subject provided via args, ask interatively (returns string)
+             raw_input = get_subject_code(None)
+             raw_subjects = [raw_input]
+             
+        subject_codes = []
+        for s in raw_subjects:
+            # Split by comma just in case mixed usage
+            parts = [p.strip().upper() for p in s.split(',') if p.strip()]
+            subject_codes.extend(parts)
+            
+        # Get download location (once for all)
         if args.no_location_prompt:
-            output_dir = default_output_dir
-            logger.info(f"Using default output directory: {output_dir.absolute()}")
+            base_output_dir = default_output_dir
+            logger.info(f"Using default output directory: {base_output_dir.absolute()}")
         else:
-            output_dir = get_download_location(default_output_dir)
+            base_output_dir = get_download_location(default_output_dir)
         
         # Show configuration summary
         print(f"\n📋 Configuration Summary")
         print("="*50)
         print(f"Username: {username}")
-        print(f"Subject Code: {subject_code}")
-        print(f"Output Directory: {output_dir.absolute()}")
+        print(f"Subjects ({len(subject_codes)}): {', '.join(subject_codes)}")
+        print(f"Output Directory: {base_output_dir.absolute()}")
         print(f"Browser: {args.browser}")
         print(f"Headless Mode: {not args.show_browser}")
         print(f"Timeout: {args.timeout}s")
         print(f"Max Retries: {args.max_retries}")
         
         # Confirm before proceeding
-        print(f"\n🚀 Ready to start downloading papers for {subject_code}")
+        print(f"\n🚀 Ready to start downloading papers for {len(subject_codes)} subjects")
         confirm = input("Continue? (y/N): ").strip().lower()
         
         if confirm not in ['y', 'yes']:
@@ -251,10 +263,10 @@ def main():
             sys.exit(0)
         
         print("\n" + "="*60)
-        print("🔄 Starting download process...")
+        print("🔄 Starting Download Process...")
         print("="*60)
         
-        # Step 1: Authentication
+        # Step 1: Authentication (Once for all subjects)
         logger.info("Step 1: Authenticating with UM portal...")
         authenticator = UMAuthenticator(
             headless=not args.show_browser,
@@ -269,97 +281,114 @@ def main():
         
         logger.info("✅ Authentication successful")
         
-        # Step 2: Search for papers
-        logger.info(f"Step 2: Searching for papers with subject code: {subject_code}")
-        scraper = PaperScraper(session)
-        papers = scraper.search_papers(subject_code)
+        # Loop through each subject
+        total_downloaded = 0
         
-        if not papers:
-            logger.warning(f"❌ No papers found for subject code: {subject_code}")
-            print(f"\n❌ No papers found for subject code: {subject_code}")
-            print("Please check the subject code and try again.")
-            sys.exit(1)
-        
-        logger.info(f"✅ Found {len(papers)} papers")
-        
-        # Display found papers list
-        print(f"\n{'='*80}")
-        print(f"📄 FOUND {len(papers)} PAST YEAR PAPERS FOR {subject_code}")
-        print(f"{'='*80}")
-        for i, paper in enumerate(papers, 1):
-            print(f"{i:2d}. {paper.title}")
-            print(f"    📅 Year: {paper.year}, Semester: {paper.semester}")
-            print(f"    📝 Type: {paper.paper_type}")
-            print(f"    🔗 URL: {paper.download_url}")
-            print()
-        
-        # Ask user if they want to download all papers
-        download_confirm = input(f"Download all {len(papers)} papers? (y/N): ").strip().lower()
-        if download_confirm not in ['y', 'yes']:
-            print("❌ Download cancelled by user")
-            authenticator.cleanup()
-            sys.exit(0)
-        
-        # Step 3: Download papers
-        logger.info("Step 3: Downloading papers...")
-        downloader = PDFDownloader(session, output_dir, max_retries=args.max_retries)
-        downloaded_files = downloader.download_papers(papers)
-        
-        if not downloaded_files:
-            logger.error("❌ No papers were downloaded successfully")
-            sys.exit(1)
-        
-        logger.info(f"✅ Downloaded {len(downloaded_files)} papers")
-        
-        # Step 4: Create ZIP archive
-        logger.info("Step 4: Creating ZIP archive...")
-        zip_creator = ZipCreator()
-        zip_filename = f"{subject_code}_Past_Year_Papers.zip"
-        zip_path_full = output_dir / zip_filename
-        zip_path = zip_creator.create_zip(downloaded_files, str(zip_path_full), subject_code)
-        
-        if zip_path:
-            logger.info(f"✅ ZIP archive created: {zip_path}")
-            print(f"\n🎉 Success! All papers downloaded and zipped:")
-            print(f"📦 ZIP file: {zip_path}")
-            print(f"📁 Individual files: {output_dir}")
+        for index, subject_code in enumerate(subject_codes, 1):
+            print(f"\n" + "="*60)
+            print(f"📚 Processing Subject {index}/{len(subject_codes)}: {subject_code}")
+            print("="*60)
             
-            # Ask if user wants to delete individual files
-            print(f"\n📁 Individual PDF files are still in: {output_dir}")
-            delete_confirm = input("Delete individual files to save space? (y/N): ").strip().lower()
-            if delete_confirm in ['y', 'yes']:
-                try:
-                    # Delete individual PDF files
-                    deleted_count = 0
-                    for file_path in downloaded_files:
-                        try:
-                            file_path = Path(file_path)
-                            if file_path.exists():
-                                file_path.unlink()
-                                deleted_count += 1
-                                logger.debug(f"Deleted: {file_path}")
-                        except Exception as file_error:
-                            logger.warning(f"Could not delete {file_path}: {file_error}")
+            try:
+                # Step 2: Search for papers
+                logger.info(f"Searching for papers: {subject_code}")
+                scraper = PaperScraper(session)
+                papers = scraper.search_papers(subject_code)
+                
+                if not papers:
+                    logger.warning(f"❌ No papers found for subject code: {subject_code}")
+                    print(f"❌ No papers found for {subject_code}")
+                    continue
+                
+                logger.info(f"✅ Found {len(papers)} papers for {subject_code}")
+                
+                # Display found papers list
+                print(f"\n{'='*80}")
+                print(f"📄 FOUND {len(papers)} PAST YEAR PAPERS FOR {subject_code}")
+                print(f"{'='*80}")
+                for i, paper in enumerate(papers, 1):
+                    print(f"{i:2d}. {paper.title}")
+                    print(f"    📅 Year: {paper.year}, Semester: {paper.semester}")
+                    print(f"    📝 Type: {paper.paper_type}")
+                    print(f"    🔗 URL: {paper.download_url}")
+                    print()
+                
+                # Auto-confirm for batch processing if multiple subjects, or ask if single
+                if len(subject_codes) > 1:
+                    print(f"Batch mode: Automatically downloading {len(papers)} papers...")
+                else:
+                    # Provide list preview only for single subject if requested?
+                    # For consistency, let's just ask confirmation for single subject
+                    download_confirm = input(f"Download {len(papers)} papers? (y/N): ").strip().lower()
+                    if download_confirm not in ['y', 'yes']:
+                        print("❌ Download skipped by user")
+                        continue
+
+                # Prepare output directory
+                output_dir = base_output_dir
+                
+                # Ensure output directory exists before downloading
+                if not output_dir.exists():
+                    try:
+                        output_dir.mkdir(parents=True, exist_ok=True)
+                    except Exception as e:
+                        logger.error(f"Failed to create directory {output_dir}: {e}")
+                        continue
+
+                # Step 3: Download papers
+                logger.info(f"Downloading {len(papers)} papers for {subject_code}...")
+                downloader = PDFDownloader(session, output_dir, max_retries=args.max_retries)
+                downloaded_files = downloader.download_papers(papers)
+                
+                if not downloaded_files:
+                    print(f"❌ Failed to download papers for {subject_code}")
+                    continue
+                
+                total_downloaded += len(downloaded_files)
+                
+                # Step 4: Create ZIP archive
+                logger.info("Creating ZIP archive...")
+                zip_creator = ZipCreator()
+                zip_filename = f"{subject_code}_Past_Year_Papers.zip"
+                zip_path_full = output_dir / zip_filename
+                zip_path = zip_creator.create_zip(downloaded_files, str(zip_path_full), subject_code)
+                
+                if zip_path:
+                    print(f"✅ ZIP created: {zip_filename}")
                     
-                    # Note: Individual files are stored directly in output_dir, not in subdirectory
-                    
-                    print(f"✅ Individual files deleted successfully ({deleted_count} files)")
-                    logger.info(f"Individual files deleted by user request ({deleted_count} files)")
-                except Exception as e:
-                    print(f"⚠️ Failed to delete individual files: {e}")
-                    logger.warning(f"Failed to delete individual files: {e}")
-            else:
-                print("📁 Individual files kept")
-        else:
-            logger.warning("⚠️ ZIP creation failed, but individual files are available")
-            print(f"\n⚠️ Papers downloaded but ZIP creation failed")
-            print(f"📁 Individual files: {output_dir}")
+                    # Ask cleanup for subject
+                    print(f"📁 Individual files in: {output_dir}")
+                    delete_confirm = input("Delete individual files (keep ZIP only)? (y/N): ").strip().lower()
+                    if delete_confirm in ['y', 'yes']:
+                        deleted_count = 0
+                        for f in downloaded_files:
+                            try:
+                                if Path(f).exists(): 
+                                    Path(f).unlink()
+                                    deleted_count += 1
+                            except: pass
+                        print(f"✅ Individual files deleted ({deleted_count} files)")
+                        
+                else:
+                    print("⚠️ ZIP creation failed")
+
+            except Exception as e:
+                logger.error(f"Error processing {subject_code}: {e}")
+                print(f"❌ Error processing {subject_code}: {e}")
+                continue
         
         # Cleanup
         authenticator.cleanup()
         
-        print(f"\n✅ Download completed successfully!")
-        print(f"Total papers downloaded: {len(downloaded_files)}")
+        if total_downloaded > 0:
+            print("\n" + "="*60)
+            if len(subject_codes) > 1:
+                print(f"🎉 Batch Process Complete!")
+            else:
+                print(f"🎉 Download Complete!")
+            print(f"Total papers downloaded: {total_downloaded}")
+            print(f"Check output directory: {base_output_dir.absolute()}")
+            print("="*60)
         
     except KeyboardInterrupt:
         logger.info("❌ Operation cancelled by user (Ctrl+C)")
